@@ -1,0 +1,8 @@
+.rightSidebar{
+    background-color: rgb(242, 179, 200);
+    /* width: calc(100% - 85%); */
+    width: 20%;
+    margin-right: px;
+    border-radius: 20px;
+    padding: 20px 20px;
+}

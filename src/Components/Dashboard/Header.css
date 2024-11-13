@@ -1,0 +1,52 @@
+/* Header Container */
+.header {
+    background-color: #ffffff;
+    padding: 4px 25px 4px 200px;
+    justify-content: space-between;
+    /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Header Content */
+  .header-content {
+    display: flex;
+    align-items: center;
+  }
+
+  .user-identity{
+    display: flex;
+    flex-direction: column;  
+    justify-content: center;
+    text-align: center;
+    padding: 5px 0;
+  }
+
+  .heading{
+     font-size: 20px;
+     font-weight: bold;
+  }
+  
+  /* Profile Picture */
+  .profile-pic {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  
+  /* User Name */
+  .user-name {
+    color: #000000;
+    font-size: 10px;
+    font-weight: bold;
+    margin: 0; /* Remove default margin */
+  }
+
+  /* User role */
+  .user-role{
+    color: #969292;
+    font-size: 10px;
+    margin: 0; /* Remove default margin */
+  }
+  

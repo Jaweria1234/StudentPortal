@@ -1,0 +1,23 @@
+.dashboard {
+    /* background-color: rgb(124, 161, 150); */
+    margin-bottom: 20px;
+  }
+  
+  .main-content {
+    display: flex;
+    
+  }
+  
+  .dashboard-content {
+    flex: 1;
+    margin: 0 25px;
+    max-width: 45%; 
+    background-color: #e7f1f8; /* Main content background */
+    border-radius: 20px; /* Rounded corners */
+    padding: 20px; /* Add some padding for inner spacing */
+    overflow: hidden;
+  }
+
+
+  
+
