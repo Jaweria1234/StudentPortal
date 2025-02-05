@@ -1,23 +1,45 @@
+/* Overall Dashboard Styling */
 .dashboard {
-    /* background-color: rgb(124, 161, 150); */
-    margin-bottom: 20px;
-  }
-  
-  .main-content {
-    display: flex;
-    
-  }
-  
-  .dashboard-content {
-    flex: 1;
-    margin: 0 25px;
-    max-width: 45%; 
-    background-color: #e7f1f8; /* Main content background */
-    border-radius: 20px; /* Rounded corners */
-    padding: 20px; /* Add some padding for inner spacing */
-    overflow: hidden;
-  }
+  display: flex;
+  height: 100vh; /* Make it take full viewport height */
+  overflow: hidden; /* Prevent scrollbars on entire dashboard */
+}
 
+/* Sidebar Styling */
+.sidebar {
+  flex: 0 0 15%; /* Fixed width for the sidebar */
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  /* background-color: #f8f9fa; */
+  /* border-right: 1px solid #ddd; */
+}
 
-  
+/* Main Content Styling */
+.dashboard-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevent scrollbars on header */
+}
 
+/* Header Styling */
+.header {
+  position: sticky; 
+  top: 0;
+  z-index: 1000;
+  /* background-color: #ffffff; */
+  /* border-bottom: 1px solid #ddd; */
+  /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); */
+}
+
+/* Dashboard Content (Scrollable Area) */
+.dashboard-content {
+  flex: 1;
+  overflow-y: auto; /* Enables scrolling for content */
+  padding: 10px;
+  /* background-color: #ffffff; */
+  background-color: #e5e8ec;
+  border-radius: 10px 10px 0 0; /* Upper corners rounded, lower corners sharp */
+}

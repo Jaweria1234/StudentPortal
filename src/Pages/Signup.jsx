@@ -13,6 +13,7 @@ const Signup = () => {
   const [mobile, setMobile] = useState('');
   const [faculty, setFaculty] = useState('');
   const [password, setPassword] = useState('');
+  const [repeatPassword, setRepeatPassword] = useState(''); // Added this state
   const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
@@ -25,11 +26,18 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent the default form submission
+    
+    console.log(email,name, mobile, faculty, password);
+    // Added validation for passwords match
+    if (password !== repeatPassword) {
+      alert('Passwords do not match!');
+      return;
+    }
 
-    console.log(email, name, mobile, faculty, password);
     try {
-      const response = await axios.post('https://localhost:7123/swagger/index.html/api/SignUp', {
-        sg_email: email,
+      // Updated API URL
+      const response = await axios.post('https://studentforumfyp.azurewebsites.net/api/Signup', {
+        sg_email: email, // Ensure keys match the schema
         sg_name: name,
         sg_mobile: mobile,
         sg_faculty: faculty,
@@ -40,8 +48,8 @@ const Signup = () => {
       console.log('Signup successful:', response.data);
       navigate('/login'); // Redirect to login page
     } catch (error) {
-      console.error('Signup failed:', error);
-      // Handle error (e.g., show a message to the user)
+      console.error('Signup failed:', error.response?.data || error.message);
+      alert('Signup failed. Please try again.');
     }
   };
 
@@ -133,6 +141,8 @@ const Signup = () => {
                   id="form3Example4cdg"
                   type={showRepeatPassword ? 'text' : 'password'}
                   className="form-control"
+                  value={repeatPassword} // Added value
+                  onChange={(e) => setRepeatPassword(e.target.value)} // Added change handler
                 />
                 <span className="password-toggle-icon" onClick={toggleRepeatPasswordVisibility}>
                   <FontAwesomeIcon icon={showRepeatPassword ? faEyeSlash : faEye} />
@@ -147,7 +157,7 @@ const Signup = () => {
               {/* Already have an account? */}
               <p className="text-center mx-3 mb-0 text-muted">
                 Have already an account?{' '}
-                <Link to="/login" className="link-info">
+                <Link to="/login" >
                   <u>Sign in</u>
                 </Link>
               </p>

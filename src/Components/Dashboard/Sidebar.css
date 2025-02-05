@@ -3,15 +3,25 @@
   position: sticky;
   top: 0;
   height: 100vh;
-  width: 17%;
-  background-color: #ecc7c7;
+  width: 15%;
+  /* background-color: #f3f8fa;  */
   display: flex;
   flex-direction: column;
   align-items: center;
   /* box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); */
   font-family: Arial, sans-serif;
-  margin-left: 90px;
-  border-radius: 20px;
+}
+
+.icon{
+  font-weight: 600;
+  /* background-color: antiquewhite; */
+  padding: 5px 15px;
+  width: 80%;
+  text-align: left;
+  margin: 10px;
+}
+span{
+  color: rgb(10, 67, 254);
 }
 
 /* Sidebar Items */
@@ -22,7 +32,7 @@
   padding: 5px 15px;
   width: 70%;
   text-align: left;
-  margin: 4px;
+  margin: 6px;
   cursor: pointer;
   border-radius: 90px;
   transition: background-color 0.3s ease, color 0.3s ease;
@@ -50,7 +60,7 @@
 /* image */
 .image-div{
   margin-top: 25px;
-  padding: 30px;
+  padding: 40px;
 }
 
 /* Responsive Design */
