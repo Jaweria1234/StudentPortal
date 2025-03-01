@@ -13,13 +13,17 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import HomeContent from "./HomeContent"; // Ensure you have the HomeContent component
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import CreatePostModal from "./CreatePostModal"; 
 
 const Sidebar = ({ onContentChange }) => {
   const navigate = useNavigate(); // Initialize useNavigate
   const [isModalOpen, setIsModalOpen] = useState(false); //  State for modal visibility
+  const { logout } = useAuth(); // ✅ Get logout function
+  
 
   const handleLogout = () => {
+    logout(); // ✅ Call logout function
     navigate("/login"); // Navigate to the login page
   };
 
@@ -38,10 +42,7 @@ const Sidebar = ({ onContentChange }) => {
         <FontAwesomeIcon icon={faCloudArrowUp} />
         <span>Create</span>
       </div>
-      <div className="sidebar-item" onClick={() => onContentChange("Group Chats Content")}>
-        <FontAwesomeIcon icon={faComments} />
-        <span>Group Chats</span>
-      </div>
+      
       <div className="sidebar-item" onClick={handleLogout}>
         <FontAwesomeIcon icon={faRightFromBracket} />
         <span>Logout</span>

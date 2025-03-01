@@ -12,9 +12,15 @@ const Navbar = () => {
 
   return (
     <div className={isResponsive ? 'topnav responsive' : 'topnav'} id="myTopnav">
-      <a href="/" className="active fw-bold" id="heading">Portal</a>
-      <a href="/">Home</a>
-      <a href="/about">About</a>
+      {/* <a href="/" className="active fw-bold" id="heading">Portal</a>
+       <a href="/">Home</a>
+      <a href="/about">About</a> */}
+      <div className="maincontainer"> 
+        <div className="main-icon"><span>N</span>etGrow</div>
+         <a href="/" className="home">Home</a>
+      </div>
+      
+
       {/* Fixing the warning by changing href and using onClick */}
       <a href="#" className="icon" onClick={(e) => { e.preventDefault(); toggleNavbar(); }}>
         <i className="fa fa-bars"></i>

@@ -3,6 +3,42 @@ import axios from "axios";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { FaHeart, FaRegComment, FaSmile, FaPaperPlane } from "react-icons/fa";
 import EmojiPicker from "emoji-picker-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEllipsisV } from "@fortawesome/free-solid-svg-icons";
+import styled from "styled-components";
+
+
+const MenuContainer = styled.div`
+  position: relative;
+  display: inline-block;
+`;
+
+const MenuIcon = styled(FontAwesomeIcon)`
+  cursor: pointer;
+  font-size: 1.5rem;
+`;
+
+const MenuList = styled.div`
+  position: absolute;
+  top: 30px;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  display: ${({ isOpen }) => (isOpen ? "block" : "none")};
+  min-width: 150px;
+  z-index: 100;
+`;
+
+const MenuItem = styled.div`
+  padding: 10px;
+  cursor: pointer;
+  &:hover {
+    background: #f5f5f5;
+  }
+`;
+
 
 const PostDisplay = () => {
   const [posts, setPosts] = useState([]);
@@ -11,7 +47,33 @@ const PostDisplay = () => {
   const [showAllComments, setShowAllComments] = useState(false);
   const [pageNumber, setPageNumber] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [openMenus, setOpenMenus] = useState({});
+  
+  const toggleMenu = (postId) => {
+    setOpenMenus((prevMenus) => ({
+      ...prevMenus,
+      [postId]: !prevMenus[postId],
+    }));
+  };
 
+  //post delete
+  const handleDelete = async (postId) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this post?");
+    if (!confirmDelete) return;
+
+    try {
+      await axios.delete(`https://studentforumfyp.azurewebsites.net/api/Post/${postId}`);
+      
+      // Update the UI: Remove the deleted post from the list
+      setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
+
+      alert("Post deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert("Failed to delete post. Please try again.");
+    }
+  };
+  
   
   // const fetchFeed = async () => {
   //   try {
@@ -119,16 +181,75 @@ const PostDisplay = () => {
     }
   };
 
-  const handleAddComment = (id, newComment) => {
-    const updatedPosts = posts.map((post) =>
-      post.id === id
-        ? { ...post, comments: [...post.comments, newComment] }
-        : post
-    );
-    setPosts(updatedPosts);
-    setCurrentComment("");
-    setShowEmojiPicker((prev) => ({ ...prev, [id]: false }));
+  // const handleAddComment = (id, newComment) => {
+  //   const updatedPosts = posts.map((post) =>
+  //     post.id === id
+  //       ? { ...post, comments: [...post.comments, newComment] }
+  //       : post
+  //   );
+  //   setPosts(updatedPosts);
+  //   setCurrentComment("");
+  //   setShowEmojiPicker((prev) => ({ ...prev, [id]: false }));
+  // };
+
+  const handleAddComment = async (postId) => {
+    const userId = localStorage.getItem("userId");
+  
+    if (!userId || !/^[0-9a-fA-F-]{36}$/.test(userId)) {
+      console.error("🚨 Invalid userId:", userId);
+      return;
+    }
+  
+    if (!currentComment.trim()) {
+      console.error("🚨 Comment is empty!");
+      return;
+    }
+  
+    const requestBody = {
+      pc_commentid: crypto.randomUUID(), // Generate a unique UUID
+      pc_postid: postId,
+      pc_comment: currentComment,
+      pc_commentName: "You", // Replace with actual user name if available
+      pc_userid: userId,
+    };
+  
+    console.log("📤 Sending Request Body:", JSON.stringify(requestBody, null, 2));
+  
+    try {
+      const response = await axios.post(
+        "https://studentforumfyp.azurewebsites.net/api/AddComments",
+        requestBody,
+        { headers: { "Content-Type": "application/json" } }
+      );
+  
+      console.log("✅ Comment added successfully:", response.data);
+  
+      // Update the comments of the post instantly
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId
+            ? {
+                ...post,
+                comments: [
+                  ...post.comments,
+                  { username: "You", text: currentComment },
+                ],
+              }
+            : post
+        )
+      );
+  
+      setCurrentComment("");
+  
+    } catch (error) {
+      console.error("❌ Error adding comment:", error);
+      if (error.response) {
+        console.error("📜 API Response Data:", error.response.data);
+      }
+    }
   };
+  
+  
 
   const handleEmojiClick = (emojiObject, postId) => {
     setCurrentComment((prev) => prev + emojiObject.emoji);
@@ -165,8 +286,15 @@ const PostDisplay = () => {
               />
               <div className="header-info">
                 <h3 className="username">{post.username}</h3>
-                <span className="timestamp">2 hours ago</span>
               </div>
+              <MenuContainer>
+              <MenuIcon icon={faEllipsisV} className="menu-icon" onClick={() => toggleMenu(post.id)} />
+              <MenuList isOpen={openMenus[post.id]}>
+               <MenuItem onClick={() => handleDelete(post.id)}>Delete</MenuItem>
+             </MenuList>
+              </MenuContainer>
+
+              {/* <FontAwesomeIcon icon={faEllipsisV} className="menu-icon" /> */}
             </div>
 
             {/* Post Image */}
@@ -189,6 +317,9 @@ const PostDisplay = () => {
 
             {/* Description */}
             <p className="description">{post.description}</p>
+            <button className="internship-button" onClick={() => console.log("Internship button clicked!")}>
+                Internship
+            </button>
 
             {/* Comments Section */}
             <div className="comments-section">
@@ -226,14 +357,10 @@ const PostDisplay = () => {
                 />
                 {currentComment && (
                   <FaPaperPlane
-                    className="post-icon"
-                    onClick={() =>
-                      handleAddComment(post.id, {
-                        username: "You",
-                        text: currentComment,
-                      })
-                    }
-                  />
+                  className="post-icon"
+                  onClick={() => handleAddComment(post.id)}
+                />
+                
                 )}
                 {showEmojiPicker[post.id] && (
                   <div className="emoji-picker">
@@ -267,34 +394,77 @@ const PostDisplay = () => {
           overflow: hidden;
         }
 
+        // .post-header {
+        //   display: flex;
+        //   align-items: center;
+        //   justify-content: space-between;
+        //   gap: 16px;
+        //   padding: 16px;
+        //   background: linear-gradient(to right, #f0f0f0, #ffffff);
+        //   border-bottom: 1px solid #ddd;
+        // }
+
+        // .profile-picture {
+        //   width: 50px;
+        //   height: 50px;
+        //   border-radius: 50%;
+        //   border: 2px solid #ddd;
+        //   object-fit: cover;
+        //   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        // }
+
+        // .header-info {
+        //   display: flex;
+        //   flex-direction: column;
+        // }
+
+        // .username {
+        //   font-size: 16px;
+        //   font-weight: 700;
+        //   color: #333;
+        // }
+
+
+
         .post-header {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          padding: 16px;
-          background: linear-gradient(to right, #f0f0f0, #ffffff);
-          border-bottom: 1px solid #ddd;
-        }
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
 
-        .profile-picture {
-          width: 50px;
-          height: 50px;
-          border-radius: 50%;
-          border: 2px solid #ddd;
-          object-fit: cover;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+.profile-picture {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+  border: 2px solid #ddd;
+  object-fit: cover;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
 
-        .header-info {
-          display: flex;
-          flex-direction: column;
-        }
+.header-info {
+  flex-grow: 1;
+}
 
-        .username {
-          font-size: 16px;
-          font-weight: 700;
-          color: #333;
-        }
+.username {
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+}
+
+.menu-icon {
+  font-size: 18px;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.3s ease;
+}
+
+.menu-icon:hover {
+  color: #333;
+}
+
 
         .timestamp {
           font-size: 12px;
@@ -335,6 +505,21 @@ const PostDisplay = () => {
           font-size: 14px;
           color: #444;
         }
+
+        .internship-button {
+           background-color: #3B71CA;
+           color: white;
+           border: none;
+           padding: 5px 10px;
+           margin-left: 10px;
+           border-radius: 5px;
+           cursor: pointer;
+           transition: 0.3s;
+         }
+
+        .internship-button:hover {
+           background-color: #0056b3;
+         }
 
         .comments-section {
           padding: 12px 16px;

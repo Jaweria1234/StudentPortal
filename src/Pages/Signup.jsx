@@ -4,6 +4,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
+import Navbar from '../Components/Navbar/Navbar';
+import homeImage from "../assets/loginimage.jpg";
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -46,6 +48,15 @@ const Signup = () => {
 
       // Handle success (e.g., show a success message or redirect)
       console.log('Signup successful:', response.data);
+      
+      // Save user data in local storage
+    localStorage.setItem("user", JSON.stringify({
+      name,
+      email,
+      mobile,
+      faculty,
+    }));
+
       navigate('/login'); // Redirect to login page
     } catch (error) {
       console.error('Signup failed:', error.response?.data || error.message);
@@ -54,15 +65,18 @@ const Signup = () => {
   };
 
   return (
+    <>
+    <Navbar />
     <section className="vh-100">
       <MDBContainer className="py-4 h-100">
         <MDBRow className="d-flex align-items-center justify-content-center h-100">
-          <MDBCol md="7" lg="5" xl="4">
-            <img
-              src="https://i.pinimg.com/564x/d1/50/f1/d150f1ef19871338975fd35d34bffc25.jpg"
-              className="img-fluid"
-              alt="Phone"
-            />
+          <MDBCol md="3" lg="3" xl="3">
+                       
+                      <img
+                        src= {homeImage}
+                        className="img-fluid"
+                        alt="Phone"
+                      />
           </MDBCol>
 
           <MDBCol md="5" lg="4" xl="4" className="offset-xl-1 mb-8">
@@ -166,6 +180,7 @@ const Signup = () => {
         </MDBRow>
       </MDBContainer>
     </section>
+    </>
   );
 };
 

@@ -1,15 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-const EditProfileModal = ({ isOpen, onClose }) => {
-  const initialState = {
-    name: "",
-    role: "",
-    location: "",
-    about: "",
-    profilePicture: null,
-  };
+const EditProfileModal = ({ isOpen, onClose, userId, profileData, updateProfile }) => {
+  const [formData, setFormData] = useState({
+    pi_userid: userId,
+    pi_role: "",
+    pi_location: "",
+    pi_about: "",
+    pi_profilepicture: null,
+    pi_extension: "",
+  });
 
-  const [formData, setFormData] = useState(initialState);
+  useEffect(() => {
+    if (profileData) {
+      setFormData({
+        pi_userid: userId,
+        pi_role: profileData.role || "",
+        pi_location: profileData.location || "",
+        pi_about: profileData.about || "",
+        pi_profilepicture: null, 
+        pi_extension: profileData.extension || "",
+      });
+    }
+  }, [profileData, userId]);
 
   if (!isOpen) return null;
 
@@ -20,53 +32,116 @@ const EditProfileModal = ({ isOpen, onClose }) => {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    setFormData({ ...formData, profilePicture: file });
+    if (file) {
+      setFormData({ ...formData, pi_profilepicture: file, pi_extension: file.name.split(".").pop() });
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Updated Profile Data:", formData);
-    onClose();
+
+    const updatedProfileData = {
+      pi_userid: formData.pi_userid,
+      pi_role: formData.pi_role,
+      pi_location: formData.pi_location,
+      pi_about: formData.pi_about,
+      pi_extension: formData.pi_extension,
+    };
+
+    if (formData.pi_profilepicture) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        updatedProfileData.pi_profilepicture = reader.result.split(",")[1]; // Extract base64 data
+
+        try {
+          const response = await fetch(
+            `https://studentforumfyp.azurewebsites.net/api/UpdateProfileInfo/${userId}`,
+            {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(updatedProfileData),
+            }
+          );
+
+          if (response.ok) {
+            updateProfile(updatedProfileData);
+            localStorage.setItem("profileData", JSON.stringify(updatedProfileData)); // Store in localStorage
+            // alert("Profile updated successfully!");
+            onClose();
+          } else {
+            alert("Failed to update profile.");
+          }
+        } catch (error) {
+          console.error("Error updating profile:", error);
+        }
+      };
+      reader.readAsDataURL(formData.pi_profilepicture);
+    } else {
+      try {
+        const response = await fetch(
+          `https://studentforumfyp.azurewebsites.net/api/UpdateProfileInfo/${userId}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(updatedProfileData),
+          }
+        );
+
+        if (response.ok) {
+          updateProfile(updatedProfileData);
+          localStorage.setItem("profileData", JSON.stringify(updatedProfileData)); // Store in localStorage
+          // alert("Profile updated successfully!");
+          onClose();
+        } else {
+          alert("Failed to update profile.");
+        }
+      } catch (error) {
+        console.error("Error updating profile:", error);
+      }
+    }
   };
 
-  const handleClose = () => {
-    setFormData(initialState);
-    onClose();
-  };
+  
+
+  
+  
+
+
+  
+
+  
 
   return (
     <div className="modal-overlay">
+     <div className="modal-overlay">
       <div className="modal-container">
-        <button className="modal-close" onClick={handleClose}>&times;</button>
+        <button className="modal-close" onClick={onClose}>&times;</button>
         <h2>Edit Profile</h2>
-        <hr />
         <form onSubmit={handleSubmit}>
           <div className="input-group">
-            <label>Name</label>
-            <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Enter your name" />
-          </div>
-          <div className="input-group">
             <label>Role</label>
-            <input type="text" name="role" value={formData.role} onChange={handleChange} placeholder="Enter your role" />
+            <input type="text" name="pi_role" value={formData.pi_role} onChange={handleChange} />
           </div>
           <div className="input-group">
             <label>Location</label>
-            <input type="text" name="location" value={formData.location} onChange={handleChange} placeholder="Enter your location" />
+            <input type="text" name="pi_location" value={formData.pi_location} onChange={handleChange} />
           </div>
           <div className="input-group">
             <label>About</label>
-            <textarea name="about" value={formData.about} onChange={handleChange} placeholder="Write about yourself"></textarea>
+            <textarea name="pi_about" value={formData.pi_about} onChange={handleChange}></textarea>
           </div>
           <div className="input-group">
             <label>Profile Picture</label>
             <input type="file" accept="image/*" onChange={handleFileChange} />
-            {formData.profilePicture && (
-              <img src={URL.createObjectURL(formData.profilePicture)} alt="Preview" className="profile-preview" />
-            )}
           </div>
           <button type="submit" className="save-btn">Save Changes</button>
         </form>
       </div>
+    </div>
 
       {/* Updated CSS for Better Design */}
       <style>{`

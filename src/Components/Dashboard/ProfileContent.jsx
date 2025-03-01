@@ -1,18 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPencil } from "@fortawesome/free-solid-svg-icons";
 import EditProfileModal from "./editProfileModal";
 import { FaHeart, FaRegComment, FaSmile, FaPaperPlane } from "react-icons/fa";
 import EmojiPicker from "emoji-picker-react";
-
+import HomeContent from "../Dashboard/HomeContent"
 const ProfileContent = () => {
   // Define metaData first
   const metaData = [
     {
       id: 1,
       username: "JohnDoe",
-      profilePicture: "default-profile.jpg",
-      postImage: "https://via.placeholder.com/600",
+      profilePicture: "https://i.pinimg.com/564x/31/31/31/3131311567a193a35fc35502987477e2.jpg",
+      postImage: "https://i.pinimg.com/564x/31/31/31/3131311567a193a35fc35502987477e2.jpg",
       description: "This is a sample post description",
       likes: 5,
       comments: [
@@ -20,24 +20,39 @@ const ProfileContent = () => {
         { username: "Alice", text: "Thanks for sharing!" },
       ],
     },
-    {
-      id: 2,
-      username: "JaneDoe",
-      profilePicture: "default-profile.jpg",
-      postImage: "https://via.placeholder.com/600",
-      description: "Another example description",
-      likes: 8,
-      comments: [{ username: "John", text: "Interesting!" }],
-    },
+    
     // Add more posts as needed
   ];
 
   // Now initialize state using metaData
+  const [profileData, setProfileData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [posts, setPosts] = useState(metaData);
   const [currentComment, setCurrentComment] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState({});
   const [showAllComments, setShowAllComments] = useState(false);
+  const userId = localStorage.getItem("userId");
+
+ 
+  useEffect(() => {
+    
+    if (userId) {
+      fetch(`https://studentforumfyp.azurewebsites.net/api/Profile/${userId}`)
+        .then((response) => response.json())
+        .then((data) => setProfileData(data))
+        .catch((error) => console.error("Error fetching profile:", error));
+    }
+  }, [userId]);
+
+
+  const updateProfile = (updatedData) => {
+    setProfileData((prevData) => ({
+      ...prevData,
+      ...updatedData,
+      profilePicturebase64: updatedData.pi_profilepicture || prevData.profilePicturebase64,
+      extension: updatedData.pi_extension || prevData.extension,
+    }));
+  };
 
   // Simulate liking a post by increasing its like count
   const handleLike = (id) => {
@@ -73,7 +88,7 @@ const ProfileContent = () => {
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
-  };
+ };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -92,7 +107,11 @@ const ProfileContent = () => {
           <div className="profile-picture-container">
             <img
               className="profile-picture"
-              src="https://i.pinimg.com/564x/31/31/31/3131311567a193a35fc35502987477e2.jpg"
+              src={
+                profileData?.profilePicturebase64
+                  ? `data:image/${profileData.extension};base64,${profileData.profilePicturebase64}`
+                  : "https://i.pinimg.com/736x/38/b4/5a/38b45af8f71d3414b987203c2a9b1415.jpg"
+              }
               alt="Profile"
             />
             {/* Edit Button Positioned Over Profile Image */}
@@ -100,9 +119,9 @@ const ProfileContent = () => {
               <FontAwesomeIcon icon={faPencil} />
             </button>
           </div>
-          <h2 className="profile-name">Jaweria Khan</h2>
-          <p className="profile-role">Software Engineer</p>
-          <p className="profile-location">Karachi Division, Sindh, Pakistan</p>
+          <h2 className="profile-name">{profileData?.name || "Your Name"}</h2>
+          <p className="profile-role">{profileData?.role || "Role not set"}</p>
+          <p className="profile-location">{profileData?.location || "Location not set"}</p>
         </div>
       </div>
 
@@ -111,110 +130,19 @@ const ProfileContent = () => {
         {/* About Section */}
         <div className="profile-about">
           <h3>About</h3>
-          <p>
-            Passionate designer with experience in creating engaging user experiences for web
-            and mobile applications. Always curious and eager to learn!
-          </p>
-        </div>
-
-        {/* Posts Section */}
-        <div className="profile-posts">
-          <h3>All Posts</h3>
-          <div className="post-feed">
-            {posts.map((post) => (
-              <div className="post-card" key={post.id}>
-                {/* Header */}
-                <div className="post-header">
-                  <img
-                    src={post.profilePicture}
-                    alt={`${post.username}'s profile`}
-                    className="profile-picture"
-                  />
-                  <div className="header-info">
-                    <h3 className="username">{post.username}</h3>
-                    <span className="timestamp">2 hours ago</span>
-                  </div>
-                </div>
-
-                {/* Post Image */}
-                <img src={post.postImage} alt="Post" className="post-image" />
-
-                {/* Actions */}
-                <div className="post-actions">
-                  <div className="action-group">
-                    <FaHeart className="action-icon like-icon" onClick={() => handleLike(post.id)} />
-                    <span className="likes-count">{post.likes} Likes</span>
-                  </div>
-                  <div className="action-group">
-                    <FaRegComment className="action-icon comment-icon" />
-                    <span>{post.comments.length} Comments</span>
-                  </div>
-                </div>
-
-                {/* Description */}
-                <p className="description">{post.description}</p>
-
-                {/* Comments Section */}
-                <div className="comments-section">
-                  {post.comments
-                    .slice(0, showAllComments ? post.comments.length : 2)
-                    .map((comment, index) => (
-                      <div key={index} className="comment">
-                        <strong>{comment.username}</strong> {comment.text}
-                      </div>
-                    ))}
-                  {post.comments.length > 2 && !showAllComments && (
-                    <div className="view-all" onClick={toggleComments}>
-                      <span>View all {post.comments.length} comments</span>
-                    </div>
-                  )}
-                  {showAllComments && post.comments.length > 2 && (
-                    <div className="view-all" onClick={toggleComments}>
-                      <span>Show less comments</span>
-                    </div>
-                  )}
-
-                  {/* Add Comment Section */}
-                  <div className="add-comment">
-                    <input
-                      type="text"
-                      placeholder="Add a comment..."
-                      value={currentComment}
-                      onChange={(e) => setCurrentComment(e.target.value)}
-                      onFocus={() =>
-                        setShowEmojiPicker((prev) => ({ ...prev, [post.id]: false }))
-                      }
-                      className="comment-input"
-                    />
-                    <FaSmile
-                      className="emoji-icon"
-                      onClick={() => toggleEmojiPicker(post.id)}
-                    />
-                    {currentComment && (
-                      <FaPaperPlane
-                        className="post-icon"
-                        onClick={() =>
-                          handleAddComment(post.id, { username: "You", text: currentComment })
-                        }
-                      />
-                    )}
-                    {showEmojiPicker[post.id] && (
-                      <div className="emoji-picker">
-                        <EmojiPicker
-                          onEmojiClick={(emojiObject) => handleEmojiClick(emojiObject, post.id)}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <p>{profileData?.about || "Write something about yourself..."}</p>
         </div>
       </div>
-
       {/* Render Edit Profile Modal */}
-      <EditProfileModal isOpen={isModalOpen} onClose={handleCloseModal} />
+      <EditProfileModal isOpen={isModalOpen} onClose={handleCloseModal}
+       userId={userId}
+       profileData={profileData}
+       updateProfile={updateProfile} />
+       
+
+       <div className="post-main">
+         <HomeContent/>
+       </div>
 
       {/* Internal CSS for Profile Section */}
       <style>{`
@@ -323,7 +251,16 @@ const ProfileContent = () => {
           color: #555;
         }
 
-        /* Posts Section */
+        .post-main{
+           background: #ffffff;
+           border-radius: 8px;
+          padding: 12px;
+          margin-top: 8px;
+        }        
+        
+
+
+        /* Posts Section............................................... */
         .profile-posts {
           background: white;
           border-radius: 8px;
@@ -331,19 +268,21 @@ const ProfileContent = () => {
         }
 
         .profile-posts h3 {
-          font-size: 18px;
+          font-size: 25px;
           font-weight: 500;
           color: #333;
         }
 
         .post-feed {
+          padding: 16px;
+          // background: #288aba;
           display: flex;
           flex-direction: column;
           gap: 20px;
         }
 
         .post-card {
-          background: #fff;
+          background: #ffffff;
           border-radius: 16px;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
           overflow: hidden;
@@ -352,8 +291,8 @@ const ProfileContent = () => {
         .post-header {
           display: flex;
           align-items: center;
-          gap: 16px;
-          padding: 16px;
+          gap: 10px;
+          padding: 7px;
           background: linear-gradient(to right, #f0f0f0, #ffffff);
           border-bottom: 1px solid #ddd;
         }
@@ -363,14 +302,22 @@ const ProfileContent = () => {
           flex-direction: column;
         }
 
+        .profile-post-pic {
+          width: 60px;
+          height: 60px;
+          border-radius: 50%;
+          border: 5px solid white;
+          object-fit: cover;
+        }
+
         .username {
-          font-size: 16px;
+          font-size: 10px;
           font-weight: 700;
           color: #333;
         }
 
         .timestamp {
-          font-size: 12px;
+          font-size: 10px;
           color: #888;
         }
 
@@ -390,12 +337,12 @@ const ProfileContent = () => {
         .action-group {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 6px;
         }
 
         .action-icon {
           cursor: pointer;
-          font-size: 20px;
+          font-size: 18px;
           color: #666;
         }
 
@@ -404,7 +351,7 @@ const ProfileContent = () => {
         }
 
         .description {
-          padding: 12px 16px;
+          padding: 0px 16px;
           font-size: 14px;
           color: #444;
         }
@@ -449,7 +396,7 @@ const ProfileContent = () => {
         }
 
         .emoji-icon {
-          font-size: 20px;
+          font-size: 22px;
           color: #555;
           cursor: pointer;
         }

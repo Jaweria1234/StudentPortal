@@ -1,13 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faImages } from "@fortawesome/free-solid-svg-icons";
 import EmojiPicker from "emoji-picker-react";
 
-const CreatePostModal = ({ isOpen, onClose }) => {
+const CreatePostModal = ({ isOpen, onClose, onViewProfile }) => {
   const [description, setDescription] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [filePreview, setFilePreview] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [internshipPost, setInternshipPost] = useState(false); // Internship toggle state
+   const [userName, setUserName] = useState(""); // Store username
+    const [profilePic, setProfilePic] = useState(""); // Store profile picture
+     const menuRef = useRef(null); // Reference to the profile menu
+      const profilePicRef = useRef(null); // Reference to the profile picture
+
+
+    // 🟢 Load data from local storage when component mounts
+      useEffect(() => {
+        const storedUser = localStorage.getItem("user");  // ✅ Fetch user object
+        const storedProfile = localStorage.getItem("profileData"); // ✅ Fetch profile object
+    
+        if (storedUser) {
+          const user = JSON.parse(storedUser); // ✅ Convert to object
+          setUserName(user.name || "Guest"); // ✅ Use correct key
+        }
+    
+        if (storedProfile) {
+          const profile = JSON.parse(storedProfile); // ✅ Convert to object
+          if (profile.pi_profilepicture && profile.pi_extension) {
+            setProfilePic(
+              `data:image/${profile.pi_extension};base64,${profile.pi_profilepicture}`
+            ); // ✅ Convert base64 to image
+          }
+        }
+      }, []);
 
   // Function to reset the modal state (description, file preview, selected file)
   const resetModal = () => {
@@ -15,6 +41,7 @@ const CreatePostModal = ({ isOpen, onClose }) => {
     setSelectedFile(null);
     setFilePreview("");
     setShowEmojiPicker(false);
+    setInternshipPost(false); // Reset internship toggle
   };
 
   // Combined close handler that resets state and calls parent's onClose
@@ -67,6 +94,8 @@ const CreatePostModal = ({ isOpen, onClose }) => {
         up_fileextension: fileExtension,
         up_createdon: new Date().toISOString(),
         up_userid: "afc9a0bf-bfd3-4f29-bd24-1c7362982e5b",
+        up_internshipPost: internshipPost, // Sending internship toggle status
+        
       };
 
       console.log("Payload:", payload);
@@ -187,6 +216,110 @@ const CreatePostModal = ({ isOpen, onClose }) => {
       cursor: "pointer",
       transition: "background 0.3s",
     },
+
+    toggleContainer: {
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      fontSize: "14px",
+      fontWeight: "500",
+      color: "#3b71ca",
+    },
+    toggleLabel: {
+      position: "relative",
+      display: "inline-block",
+      width: "42px",
+      height: "22px",
+    },
+    toggleInput: {
+      opacity: 0,
+      width: 0,
+      height: 0,
+    },
+    toggleSlider: {
+      position: "absolute",
+      cursor: "pointer",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "#ccc",
+      transition: "0.4s",
+      borderRadius: "34px",
+    },
+    toggleSliderBefore: {
+      position: "absolute",
+      content: '""',
+      height: "16px",
+      width: "16px",
+      left: "3px",
+      bottom: "3px",
+      backgroundColor: "white",
+      transition: "0.4s",
+      borderRadius: "50%",
+    },
+    toggleChecked: {
+      backgroundColor: "#3b71ca",
+    },
+    toggleCheckedBefore: {
+      transform: "translateX(20px)",
+      backgroundColor: "white",
+    },
+    toggleText: {
+      color: "#3b71ca",
+    },toggleContainer: {
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      fontSize: "14px",
+      fontWeight: "500",
+      color: "#3b71ca",
+    },
+    toggleLabel: {
+      position: "relative",
+      display: "inline-block",
+      width: "42px",
+      height: "22px",
+    },
+    toggleInput: {
+      opacity: 0,
+      width: 0,
+      height: 0,
+    },
+    toggleSlider: {
+      position: "absolute",
+      cursor: "pointer",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "#ccc",
+      transition: "0.4s",
+      borderRadius: "34px",
+    },
+    toggleSliderBefore: {
+      position: "absolute",
+      content: '""',
+      height: "16px",
+      width: "16px",
+      left: "3px",
+      bottom: "3px",
+      backgroundColor: "white",
+      transition: "0.4s",
+      borderRadius: "50%",
+    },
+    toggleChecked: {
+      backgroundColor: "#3b71ca",
+    },
+    toggleCheckedBefore: {
+      transform: "translateX(20px)",
+      backgroundColor: "white",
+    },
+    toggleText: {
+      color: "#3b71ca",
+    },
+
+    
   };
 
   return (
@@ -196,12 +329,20 @@ const CreatePostModal = ({ isOpen, onClose }) => {
           &times;
         </button>
         <div style={styles.header}>
-          <img
+        
+        <img
+            ref={profilePicRef}
+            src={profilePic ||
+               "https://i.pinimg.com/736x/38/b4/5a/38b45af8f71d3414b987203c2a9b1415.jpg"}
+            alt="User Profile"
+            style={styles.profileImage}
+          />
+          {/* <img
             src="https://i.pinimg.com/564x/31/31/31/3131311567a193a35fc35502987477e2.jpg"
             alt="Profile"
             style={styles.profileImage}
-          />
-          <span style={styles.username}>Jave</span>
+          /> */}
+          <span className="user-name" style={styles.username}>{userName || "Guest"}</span>
         </div>
         <textarea
           placeholder="What do you want to talk about?"
@@ -235,6 +376,34 @@ const CreatePostModal = ({ isOpen, onClose }) => {
               😊
             </span>
           </div>
+     
+          <div style={styles.toggleContainer}>
+      <label style={styles.toggleLabel}>
+        <input
+          type="checkbox"
+          checked={internshipPost}
+          onChange={() => setInternshipPost(!internshipPost)}
+          style={styles.toggleInput}
+        />
+        <span
+          style={{
+            ...styles.toggleSlider,
+            ...( internshipPost ? styles.toggleChecked : {}),
+          }}
+        >
+          <span
+            style={{
+              ...styles.toggleSliderBefore,
+              ...(internshipPost ? styles.toggleCheckedBefore : {}),
+            }}
+          ></span>
+        </span>
+      </label>
+      <span style={styles.toggleText}>Internship</span>
+    </div>
+         
+
+
           <button style={styles.postButton} onClick={handlePost}>
             Post
           </button>

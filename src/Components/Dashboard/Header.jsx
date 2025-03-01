@@ -1,12 +1,37 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Header.css";
+import { useAuth } from "../../context/AuthContext";
 
-const Header = ({ userName, profilePic, onViewProfile }) => {
+const Header = ({ onViewProfile }) => {
+  const [userName, setUserName] = useState(""); // Store username
+  const [profilePic, setProfilePic] = useState(""); // Store profile picture
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const menuRef = useRef(null); // Reference to the profile menu
   const profilePicRef = useRef(null); // Reference to the profile picture
+  const { logout } = useAuth(); // ✅ Get logout function
+
+  // 🟢 Load data from local storage when component mounts
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");  // ✅ Fetch user object
+    const storedProfile = localStorage.getItem("profileData"); // ✅ Fetch profile object
+
+    if (storedUser) {
+      const user = JSON.parse(storedUser); // ✅ Convert to object
+      setUserName(user.name || "Guest"); // ✅ Use correct key
+    }
+
+    if (storedProfile) {
+      const profile = JSON.parse(storedProfile); // ✅ Convert to object
+      if (profile.pi_profilepicture && profile.pi_extension) {
+        setProfilePic(
+          `data:image/${profile.pi_extension};base64,${profile.pi_profilepicture}`
+        ); // ✅ Convert base64 to image
+      }
+    }
+  }, []);
+
 
   // Function to toggle the menu when the profile picture is clicked
   const handleProfileClick = () => {
@@ -21,7 +46,9 @@ const Header = ({ userName, profilePic, onViewProfile }) => {
 
   // Function to handle the Sign Out logic
   const handleSignOut = () => {
-    setIsMenuOpen(false); // Close the menu
+    logout(); // ✅ Call logout function
+    localStorage.removeItem("user"); // 🛑 Remove user data on logout
+    localStorage.removeItem("profileData");
     navigate("/login"); // Navigate to the login page
   };
 
@@ -30,7 +57,8 @@ const Header = ({ userName, profilePic, onViewProfile }) => {
     // Function to detect click outside of the profile menu or profile picture
     const handleClickOutside = (event) => {
       if (
-        menuRef.current && !menuRef.current.contains(event.target) && 
+        menuRef.current && 
+        !menuRef.current.contains(event.target) && 
         !profilePicRef.current.contains(event.target)
       ) {
         setIsMenuOpen(false); // Close the menu if click is outside
@@ -50,13 +78,12 @@ const Header = ({ userName, profilePic, onViewProfile }) => {
     <header className="header">
       <div className="header-content">
         <div className="user-identity">
-          <h2 className="user-name">{userName}</h2>
-          {/* <p className="user-role">{role}</p> */}
+          <h2 className="user-name">{userName || "Guest"}</h2>
         </div>
         <div className="profile-container">
           <img
             ref={profilePicRef}
-            src={profilePic}
+            src={profilePic || "https://i.pinimg.com/736x/38/b4/5a/38b45af8f71d3414b987203c2a9b1415.jpg"}
             alt="User Profile"
             className="profile-pic"
             onClick={handleProfileClick} // Toggle menu on click

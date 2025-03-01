@@ -7,7 +7,25 @@
   #myTopnav{
     position: sticky;
     top: 0;
-     overflow: hidden;
+    overflow: hidden;
+  }
+   
+  .maincontainer{
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+  }
+  .main-icon{
+    font-weight: 600;
+    font-size: larger;
+    padding: 11px;
+    width: 60%;
+    text-align: left;
+    
+  }
+  
+  span{
+    color: rgb(10, 67, 254);
   }
   .topnav {
     overflow: hidden;
@@ -46,6 +64,7 @@
     align-items: center;
     margin-left: auto;
   }
+
   @media screen and (max-width: 600px) {
     .topnav a:not(:first-child) {
       display: none;
